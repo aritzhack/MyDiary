@@ -27,7 +27,7 @@ public class Diary {
         return this.entries.get(date);
     }
 
-    public boolean hasDate(Date date){
+    public boolean hasDate(Date date) {
         return this.entries.containsKey(date);
     }
 }

@@ -6,8 +6,9 @@ import android.provider.BaseColumns;
  * Enum so that it cannot be instantiated (it is a static utility class after all)
  * Created by aritzh on 18/02/14.
  */
-public enum  DBEntryRow {
+public enum DBEntryRow {
     ;
+
     public static class TableData implements BaseColumns {
         public static final String TABLE_NAME = "Diary";
         public static final String COLUMN_DATE = "date";
