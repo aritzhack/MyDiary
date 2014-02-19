@@ -31,7 +31,7 @@ public class Date implements Serializable {
         this.year = year;
         this.month = month;
         this.day = day;
-        calendar.set(year, month, day);
+        calendar.set(year, month-1, day);
         this.toString = DATE_FORMAT.format(this.calendar.getTime());
     }
 
