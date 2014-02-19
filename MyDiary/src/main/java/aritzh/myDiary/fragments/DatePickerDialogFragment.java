@@ -22,6 +22,10 @@ public class DatePickerDialogFragment extends FramelessDialogFragment {
     private static final String DATE_ARG = "DATE_ARG";
     private Date date;
 
+    public DatePickerDialogFragment() {
+        super(R.layout.fragment_date_picker_dialog);
+    }
+
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided date.
@@ -37,8 +41,9 @@ public class DatePickerDialogFragment extends FramelessDialogFragment {
         return fragment;
     }
 
-    public DatePickerDialogFragment() {
-        super(R.layout.fragment_date_picker_dialog);
+    private static int getDayAmount(int year, int month) {
+        final List<Integer> thirties = Arrays.asList(4, 6, 9, 11);
+        return (month == 2) ? year % 4 == 0 ? 29 : 28 : thirties.contains(month) ? 30 : 31;
     }
 
     @Override
@@ -77,20 +82,32 @@ public class DatePickerDialogFragment extends FramelessDialogFragment {
             }
         });
 
-        final NumberPicker.OnValueChangeListener changeListener = new NumberPicker.OnValueChangeListener() {
+        NumberPickerListener yearListener = new NumberPickerListener() {
             @Override
-            public void onValueChange(NumberPicker numberPicker, int oldValue, int newValue) {
-                if (newValue > numberPicker.getMaxValue() || newValue < numberPicker.getMinValue()) {
-                    if (newValue > numberPicker.getMaxValue() || newValue < numberPicker.getMinValue()) numberPicker.setValue(numberPicker.getMinValue());
-                    else numberPicker.setValue(oldValue);
-                }
+            public void onValueChanged(NumberPicker np) {
+                if (yearPicker.getValue() % 4 == 0 && monthPicker.getValue() == 2)
+                    dayPicker.setMaxValue(29);
             }
         };
 
-        yearPicker.setOnValueChangedListener(changeListener);
-        monthPicker.setOnValueChangedListener(changeListener);
-        dayPicker.setOnValueChangedListener(changeListener);
 
+        NumberPickerListener monthListener = new NumberPickerListener() {
+            @Override
+            public void onValueChanged(NumberPicker np) {
+                dayPicker.setMaxValue(getDayAmount(yearPicker.getValue(), monthPicker.getValue()));
+            }
+        };
+
+        NumberPickerListener dayListener = new NumberPickerListener() {
+            @Override
+            public void onValueChanged(NumberPicker np) {
+                // Do Nothing
+            }
+        };
+
+        yearPicker.setOnValueChangedListener(yearListener);
+        monthPicker.setOnValueChangedListener(monthListener);
+        dayPicker.setOnValueChangedListener(dayListener);
 
         dayPicker.setMinValue(1);
         dayPicker.setMaxValue(31);
@@ -104,28 +121,16 @@ public class DatePickerDialogFragment extends FramelessDialogFragment {
         yearPicker.setMaxValue(2150);
         yearPicker.setWrapSelectorWheel(true);
 
-        yearPicker.setOnScrollListener(new NumberPicker.OnScrollListener() {
-            @Override
-            public void onScrollStateChange(NumberPicker np, int i) {
-                if (np.getValue() % 4 == 0 && monthPicker.getValue() == 2) {
-                    dayPicker.setMaxValue(29);
-                }
-            }
-        });
-
-        monthPicker.setOnScrollListener(new NumberPicker.OnScrollListener() {
-            final List<Integer> thirtyOnes = Arrays.asList(4, 6, 9, 11);
-
-            @Override
-            public void onScrollStateChange(NumberPicker np, int i) {
-                dayPicker.setMaxValue(np.getValue() == 2 ? yearPicker.getValue() % 4 == 0 ? 29 : 28 : thirtyOnes.contains(np.getValue()) ? 31 : 30);
-            }
-        });
+        yearPicker.setOnScrollListener(yearListener);
+        monthPicker.setOnScrollListener(monthListener);
+        dayPicker.setOnScrollListener(dayListener);
 
         if (this.date == null) this.date = new Date();
         yearPicker.setValue(this.date.getYear());
         monthPicker.setValue(this.date.getMonth());
         dayPicker.setValue(this.date.getDay());
+
+        dayPicker.setMaxValue(getDayAmount(yearPicker.getValue(), monthPicker.getValue()));
 
         return v;
     }
@@ -157,5 +162,25 @@ public class DatePickerDialogFragment extends FramelessDialogFragment {
 
     public interface DatePickerListener {
         public void dateSaved(Date date);
+    }
+
+    private abstract class NumberPickerListener implements NumberPicker.OnScrollListener, NumberPicker.OnValueChangeListener {
+
+        public abstract void onValueChanged(NumberPicker np);
+
+        @Override
+        public void onScrollStateChange(NumberPicker numberPicker, int i) {
+            this.onValueChanged(numberPicker);
+        }
+
+        @Override
+        public void onValueChange(NumberPicker numberPicker, int oldValue, int newValue) {
+            if (newValue > numberPicker.getMaxValue() || newValue < numberPicker.getMinValue()) {
+                if (newValue > numberPicker.getMaxValue() || newValue < numberPicker.getMinValue())
+                    numberPicker.setValue(numberPicker.getMinValue());
+                else numberPicker.setValue(oldValue);
+            }
+            this.onValueChanged(numberPicker);
+        }
     }
 }
