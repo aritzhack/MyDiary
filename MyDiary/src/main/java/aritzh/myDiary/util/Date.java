@@ -1,15 +1,11 @@
 package aritzh.myDiary.util;
 
-import android.widget.NumberPicker;
-
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-
-import aritzh.myDiary.fragments.PasswordDialogFragment;
 
 /**
  * Created by aritzh on 15/02/14.

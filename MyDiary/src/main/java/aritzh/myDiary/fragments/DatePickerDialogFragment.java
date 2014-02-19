@@ -62,7 +62,6 @@ public class DatePickerDialogFragment extends FramelessDialogFragment {
                              Bundle savedInstanceState) {
 
         final View v = super.onCreateView(inflater, container, savedInstanceState);
-        assert v != null;
 
         final NumberPicker dayPicker = ((NumberPicker) v.findViewById(R.id.dayPicker));
         final NumberPicker monthPicker = ((NumberPicker) v.findViewById(R.id.monthPicker));
@@ -136,8 +135,6 @@ public class DatePickerDialogFragment extends FramelessDialogFragment {
     }
 
     public void save() {
-        assert getView() != null;
-
         NumberPicker dayPicker = (NumberPicker) getView().findViewById(R.id.dayPicker);
         NumberPicker monthPicker = (NumberPicker) getView().findViewById(R.id.monthPicker);
         NumberPicker yearPicker = (NumberPicker) getView().findViewById(R.id.yearPicker);
@@ -148,8 +145,6 @@ public class DatePickerDialogFragment extends FramelessDialogFragment {
     }
 
     public void setToToday() {
-        assert getView() != null;
-
         NumberPicker dayPicker = (NumberPicker) getView().findViewById(R.id.dayPicker);
         NumberPicker monthPicker = (NumberPicker) getView().findViewById(R.id.monthPicker);
         NumberPicker yearPicker = (NumberPicker) getView().findViewById(R.id.yearPicker);

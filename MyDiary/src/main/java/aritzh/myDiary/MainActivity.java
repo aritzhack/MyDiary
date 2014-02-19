@@ -1,15 +1,20 @@
 package aritzh.myDiary;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import aritzh.myDiary.fragments.DatePickerDialogFragment;
-import aritzh.myDiary.fragments.PasswordDialogFragment;
 import aritzh.myDiary.util.Date;
+import aritzh.myDiary.util.MiscUtil;
 
 public class MainActivity extends Activity implements DatePickerDialogFragment.DatePickerListener {
 
@@ -49,6 +54,60 @@ public class MainActivity extends Activity implements DatePickerDialogFragment.D
     @Override
     protected void onResume() {
         super.onResume();
-        if(!isLoggedIn) new PasswordDialogFragment().show(getFragmentManager(), "passwordLogin");
+        if (!isLoggedIn) promptForPassword();
+    }
+
+    private void promptForPassword() {
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Enter password")
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Editable e = input.getText();
+                        if (e != null && e.length() != 0) {
+                            MainActivity.this.loggedIn(e.toString());
+                            dialogInterface.dismiss();
+                        } else {
+                            MiscUtil.showAlertDialog(MainActivity.this, R.string.passMustNotBeEmptyMessage, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int button) {
+                                    MainActivity.this.promptForPassword();
+                                }
+                            });
+                        }
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int i) {
+                        MainActivity.this.finish();
+                    }
+                })
+                .setView(input)
+                .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(final DialogInterface dialog) {
+                        MiscUtil.yesNoDialog(MainActivity.this, R.string.mustEnterPasswordMessage, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        MainActivity.this.finish();
+                                    }
+                                }, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        dialogInterface.dismiss();
+                                        MainActivity.this.promptForPassword();
+                                    }
+                                }
+                        );
+                    }
+                }).create()
+                .show();
+    }
+
+    public void loggedIn(String pass) {
     }
 }
