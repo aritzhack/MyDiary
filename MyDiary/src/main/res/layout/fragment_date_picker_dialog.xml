@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/save_button"
+        android:id="@+id/save_button"
+        android:layout_below="@+id/monthPicker"
+        android:layout_alignLeft="@+id/yearPicker"
+        android:layout_alignStart="@+id/yearPicker"
+        android:layout_alignRight="@+id/yearPicker"
+        android:layout_alignEnd="@+id/yearPicker" />
+
+    <NumberPicker
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/monthPicker"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/dayPicker" />
+
+    <NumberPicker
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/dayPicker"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <NumberPicker
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/yearPicker"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/monthPicker" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/today"
+        android:id="@+id/today_button"
+        android:layout_below="@+id/dayPicker"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+</RelativeLayout>
