@@ -15,5 +15,6 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="ok">OK</string>
+    <string name="accept">Accept</string>
 
 </resources>

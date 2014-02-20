@@ -1,7 +1,6 @@
 package aritzh.myDiary;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
@@ -15,6 +14,8 @@ import android.widget.TextView;
 import aritzh.myDiary.fragments.DatePickerDialogFragment;
 import aritzh.myDiary.util.Date;
 import aritzh.myDiary.util.MiscUtil;
+import aritzh.myDiary.util.dialogs.DialogBuilder;
+import aritzh.myDiary.util.dialogs.DialogButton;
 
 public class MainActivity extends Activity implements DatePickerDialogFragment.DatePickerListener {
 
@@ -61,50 +62,48 @@ public class MainActivity extends Activity implements DatePickerDialogFragment.D
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
 
-        new AlertDialog.Builder(this)
+        new DialogBuilder(this, "")
                 .setTitle("Enter password")
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                .addButton(DialogButton.OK, new DialogBuilder.Listener() {
                     @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
+                    public void onAction(DialogInterface dialog) {
                         Editable e = input.getText();
                         if (e != null && e.length() != 0) {
                             MainActivity.this.loggedIn(e.toString());
-                            dialogInterface.dismiss();
+                            dialog.dismiss();
                         } else {
-                            MiscUtil.showAlertDialog(MainActivity.this, R.string.passMustNotBeEmptyMessage, new DialogInterface.OnClickListener() {
+                            MiscUtil.showOkDialog(MainActivity.this, R.string.passMustNotBeEmptyMessage, new DialogBuilder.Listener() {
                                 @Override
-                                public void onClick(DialogInterface dialogInterface, int button) {
+                                public void onAction(DialogInterface dialogInterface) {
                                     MainActivity.this.promptForPassword();
                                 }
                             });
                         }
                     }
                 })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                .addButton(DialogButton.CANCEL, new DialogBuilder.Listener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int i) {
-                        MainActivity.this.finish();
-                    }
-                })
-                .setView(input)
-                .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(final DialogInterface dialog) {
-                        MiscUtil.yesNoDialog(MainActivity.this, R.string.mustEnterPasswordMessage, new DialogInterface.OnClickListener() {
+                    public void onAction(DialogInterface dialog) {
+                        new DialogBuilder(MainActivity.this, R.string.mustEnterPasswordMessage)
+                                .addButton(DialogButton.YES, new DialogBuilder.Listener() {
                                     @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                    public void onAction(DialogInterface dialog) {
                                         MainActivity.this.finish();
                                     }
-                                }, new DialogInterface.OnClickListener() {
+                                })
+                                .addButton(DialogButton.NO, new DialogBuilder.Listener() {
                                     @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        dialogInterface.dismiss();
+                                    public void onAction(DialogInterface dialog) {
+                                        dialog.dismiss();
                                         MainActivity.this.promptForPassword();
                                     }
-                                }
-                        );
+                                })
+                                .setCancelButton(DialogButton.YES)
+                                .show();
                     }
-                }).create()
+                })
+                .setCancelButton(DialogButton.CANCEL)
+                .setView(input)
                 .show();
     }
 
