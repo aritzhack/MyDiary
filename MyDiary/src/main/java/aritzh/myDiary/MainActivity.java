@@ -2,6 +2,7 @@ package aritzh.myDiary;
 
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputType;
@@ -11,6 +12,9 @@ import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import aritzh.myDiary.db.DBHelper;
+import aritzh.myDiary.db.DiaryTable;
+import aritzh.myDiary.diary.Entry;
 import aritzh.myDiary.fragments.DatePickerDialogFragment;
 import aritzh.myDiary.util.Date;
 import aritzh.myDiary.util.MiscUtil;
@@ -22,12 +26,13 @@ public class MainActivity extends Activity implements DatePickerDialogFragment.D
     public static final String LOG_TAG = "MY-DIARY";
 
     private boolean isLoggedIn = false;
+    private Date date;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ((TextView) findViewById(R.id.dayTitleText)).setText(new Date().toString());
+        ((TextView) findViewById(R.id.dayTitleText)).setText((this.date = new Date()).toString());
     }
 
     @Override
@@ -38,16 +43,37 @@ public class MainActivity extends Activity implements DatePickerDialogFragment.D
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_change_day) {
-            DatePickerDialogFragment.newInstance(new aritzh.myDiary.util.Date()).show(getFragmentManager(), "mainDatePickerDialog");
-            return true;
+        switch (item.getItemId()) {
+            case R.id.action_change_day:
+                DatePickerDialogFragment.newInstance(new Date()).show(getFragmentManager(), "mainDatePickerDialog");
+                return true;
+            case R.id.action_save_entry:
+                Entry entry = new Entry(this.date, ((EditText)findViewById(R.id.entryMessage)).getText());
+                DBHelper helper = new DBHelper(this);
+                SQLiteDatabase db = helper.getWritableDatabase();
+                if(DiaryTable.isEntryPresent(this.date, db)) DiaryTable.updateEntry(entry, db);
+                else DiaryTable.putEntry(entry, db);
+                db.close();
+                return true;
+            case R.id.action_debug_db:
+                helper = new DBHelper(this);
+                db = helper.getReadableDatabase();
+                for(Entry e : DiaryTable.getAllEntries(db)) {
+                    Log.i(LOG_TAG, e.getTitle() + "(" + e.getDate().toString() + "): " + e.getMessage());
+                }
+                db.close();
+                return true;
+            case R.id.action_clear_db:
+                helper = new DBHelper(this);
+                helper.onCreate(helper.getWritableDatabase());
         }
         return super.onOptionsItemSelected(item);
     }
 
     @Override
-    public void dateSaved(aritzh.myDiary.util.Date date) {
+    public void dateSaved(Date date) {
+        if(date == null) return;
+        this.date = date;
         ((TextView) findViewById(R.id.dayTitleText)).setText(date.toString());
         Log.i(MainActivity.LOG_TAG, "Date: " + date.getDay() + "/" + date.getMonth() + "/" + date.getYear());
     }

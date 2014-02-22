@@ -7,4 +7,21 @@
         android:orderInCategory="100"
         android:icon="@android:drawable/ic_menu_my_calendar"
         android:showAsAction="ifRoom" />
+    <item android:id="@+id/action_save_entry"
+        android:title="Save entry"
+        android:orderInCategory="99"
+        android:icon="@android:drawable/ic_menu_save"
+        android:showAsAction="ifRoom" />
+
+    <item android:id="@+id/action_debug_db"
+        android:title="Debug"
+        android:orderInCategory="98"
+        android:icon="@android:drawable/stat_notify_error"
+        android:showAsAction="ifRoom" />
+
+    <item android:id="@+id/action_clear_db"
+        android:title="Clear DB"
+        android:orderInCategory="97"
+        android:icon="@android:drawable/ic_notification_clear_all"
+        android:showAsAction="ifRoom" />
 </menu>

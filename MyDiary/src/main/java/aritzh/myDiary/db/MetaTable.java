@@ -18,7 +18,7 @@ public class MetaTable implements BaseColumns, SQLConstants {
             "CREATE TABLE " + TABLE_NAME + " (" +
                     _ID + " INTEGER PRIMARY KEY," +
                     COLUMN_FIELD + TEXT_TYPE + COMMA_SEP +
-                    COLUMN_VALUE + TEXT_TYPE + COMMA_SEP + " )";
+                    COLUMN_VALUE + TEXT_TYPE + " )";
 
     private MetaTable() {
 
@@ -76,7 +76,7 @@ public class MetaTable implements BaseColumns, SQLConstants {
         initDB(db);
     }
 
-    public boolean isEntryPresent(String property, SQLiteDatabase db) {
+    public boolean isPropertyPresent(String property, SQLiteDatabase db) {
         return getProperty(property, db) != null;
     }
 }

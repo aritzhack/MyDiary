@@ -17,14 +17,14 @@ public class Entry {
         this(date, null, null);
     }
 
-    public Entry(Date date, String message) {
+    public Entry(Date date, CharSequence message) {
         this(date, message, null);
     }
 
-    public Entry(Date date, String message, String title) {
+    public Entry(Date date, CharSequence message, String title) {
         Preconditions.checkArgument(date != null, "Date must not be null");
         this.date = date;
-        this.message = message != null ? message : "";
+        this.message = message != null ? message.toString() : "";
         this.title = title != null ? title : "";
     }
 
