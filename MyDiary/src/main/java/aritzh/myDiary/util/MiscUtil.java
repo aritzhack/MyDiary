@@ -2,6 +2,8 @@ package aritzh.myDiary.util;
 
 import android.content.Context;
 
+import org.joda.time.LocalDate;
+
 import aritzh.myDiary.util.dialogs.DialogBuilder;
 import aritzh.myDiary.util.dialogs.DialogButton;
 
@@ -17,4 +19,15 @@ public class MiscUtil {
                 .show();
     }
 
+    public static LocalDate parseDate(String dateString) {
+        String[] tokens = dateString.split("-");
+        int day = Integer.parseInt(tokens[0]);
+        int month = Integer.parseInt(tokens[1]);
+        int year = Integer.parseInt(tokens[2]);
+        return new LocalDate(year, month, day);
+    }
+
+    public static String dateToString(LocalDate date) {
+        return String.format("%02d", date.getDayOfMonth()) + "-" + String.format("%02d", date.getMonthOfYear()) + "-" + date.getYear();
+    }
 }

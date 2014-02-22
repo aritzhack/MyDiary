@@ -8,12 +8,14 @@ import android.util.Log;
 
 import com.google.common.collect.Lists;
 
-import java.text.ParseException;
+import org.joda.time.LocalDate;
+
+import java.net.MulticastSocket;
 import java.util.List;
 
 import aritzh.myDiary.MainActivity;
 import aritzh.myDiary.diary.Entry;
-import aritzh.myDiary.util.Date;
+import aritzh.myDiary.util.MiscUtil;
 
 /**
  * Created by aritzh on 20/02/14.
@@ -38,13 +40,13 @@ public class DiaryTable implements BaseColumns, SQLConstants {
 
     public static ContentValues getValuesFromEntry(Entry entry) {
         ContentValues values = new ContentValues();
-        values.put(COLUMN_DATE, entry.getDate().toString());
+        values.put(COLUMN_DATE, MiscUtil.dateToString(entry.getDate()));
         values.put(COLUMN_TITLE, entry.getTitle());
         values.put(COLUMN_ENTRY_MESSAGE, entry.getMessage());
         return values;
     }
 
-    public static Entry getEntry(Date date, SQLiteDatabase db) {
+    public static Entry getEntry(LocalDate date, SQLiteDatabase db) {
 
         String[] projection = {
                 _ID,
@@ -55,11 +57,14 @@ public class DiaryTable implements BaseColumns, SQLConstants {
 
         String sortOrder = COLUMN_DATE + " DESC";
 
+        String dateString1 = MiscUtil.dateToString(date);
+        Log.d(MainActivity.LOG_TAG, "Looking for entry(ies) with date " + dateString1);
+
         Cursor c = db.query(
                 TABLE_NAME,                         // The table to query
                 projection,                         // The columns to return
                 COLUMN_DATE + " = ?",                // The columns for the WHERE clause
-                new String[]{date.toString()},  // The values for the WHERE clause
+                new String[]{dateString1},  // The values for the WHERE clause
                 null,                               // don't group the rows
                 null,                               // don't filter by row groups
                 sortOrder                           // order by date, just in case
@@ -74,15 +79,10 @@ public class DiaryTable implements BaseColumns, SQLConstants {
         String title = c.getString(c.getColumnIndexOrThrow(COLUMN_TITLE));
 
         final String dateString = c.getString(c.getColumnIndexOrThrow(COLUMN_DATE));
-        try {
-            final Date foundDate = Date.parse(dateString);
-            if (date.equals(foundDate)) return new Entry(foundDate, message, title);
-            else
-                Log.e(MainActivity.LOG_TAG, "The input date and the entry found don't match dates!");
-        } catch (ParseException e) {
-            e.printStackTrace();
-            Log.e(MainActivity.LOG_TAG, "Error parsing date " + dateString);
-        }
+        final LocalDate foundDate = MiscUtil.parseDate(dateString);
+        if (date.equals(foundDate)) return new Entry(foundDate, message, title);
+        else Log.e(MainActivity.LOG_TAG, "The input date and the entry found don't match dates!");
+
         return null;
     }
 
@@ -95,16 +95,16 @@ public class DiaryTable implements BaseColumns, SQLConstants {
     public static boolean updateEntry(Entry entry, SQLiteDatabase db) {
         ContentValues values = getValuesFromEntry(entry);
 
-        int affected = db.update(TABLE_NAME, values, COLUMN_DATE + " = " + entry.getDate().toString(), null);
+        int affected = db.update(TABLE_NAME, values, COLUMN_DATE + " = ?", new String[]{MiscUtil.dateToString(entry.getDate())});
         if (affected > 1)
-            throw new DBEntryDuplicatedException("Found multiple rows matching date " + entry.getDate().toString());
+            throw new DBEntryDuplicatedException("Found multiple rows matching date " + MiscUtil.dateToString(entry.getDate()));
         Log.d(MainActivity.LOG_TAG, "Updated " + affected + " rows");
         return affected != 0;
     }
 
-    public static void removeEntry(Date date, SQLiteDatabase db) {
+    public static void removeEntry(LocalDate date, SQLiteDatabase db) {
         String selection = COLUMN_DATE + " LIKE ?";
-        String[] selectionArgs = {date.toString()};
+        String[] selectionArgs = {MiscUtil.dateToString(date)};
         db.delete(TABLE_NAME, selection, selectionArgs);
     }
 
@@ -140,36 +140,34 @@ public class DiaryTable implements BaseColumns, SQLConstants {
 
         do {
             final String dateString = c.getString(c.getColumnIndexOrThrow(COLUMN_DATE));
-            try {
-                Date date = Date.parse(dateString);
-                final String message = c.getString(c.getColumnIndexOrThrow(COLUMN_ENTRY_MESSAGE));
-                final String title = c.getString(c.getColumnIndexOrThrow(COLUMN_TITLE));
-                Entry entry = new Entry(date, message, title);
-                entries.add(entry);
-            } catch (ParseException e) {
-                e.printStackTrace();
-                Log.e(MainActivity.LOG_TAG, "Error parsing date " + dateString);
-            }
+            LocalDate date = MiscUtil.parseDate(dateString);
+            final String message = c.getString(c.getColumnIndexOrThrow(COLUMN_ENTRY_MESSAGE));
+            final String title = c.getString(c.getColumnIndexOrThrow(COLUMN_TITLE));
+            Entry entry = new Entry(date, message, title);
+            entries.add(entry);
         } while (c.moveToNext());
 
 
         return entries;
     }
 
-    public static boolean isEntryPresent(Date date, SQLiteDatabase db) {
+    public static boolean isEntryPresent(LocalDate date, SQLiteDatabase db) {
         String[] projection = {
                 _ID,
                 COLUMN_DATE
         };
 
+        String dateString = MiscUtil.dateToString(date);
+        Log.d(MainActivity.LOG_TAG, "Looking for entry(ies) with date " + dateString);
+
         Cursor c = db.query(
-                TABLE_NAME,                         // The table to query
-                projection,                         // The columns to return
-                COLUMN_DATE + "= ?",                // The columns for the WHERE clause
-                new String[]{date.toString()},  // The values for the WHERE clause
-                null,                               // don't group the rows
-                null,                               // don't filter by row groups
-                null                                // order by date, just in case
+                TABLE_NAME,                                 // The table to query
+                projection,                                 // The columns to return
+                COLUMN_DATE + "= ?",                        // The columns for the WHERE clause
+                new String[]{dateString},                   // The values for the WHERE clause
+                null,                                       // don't group the rows
+                null,                                       // don't filter by row groups
+                null                                        // order by date, just in case
         );
 
         return c != null && c.moveToFirst() && c.getCount() > 0;

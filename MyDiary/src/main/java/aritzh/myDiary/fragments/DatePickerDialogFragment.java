@@ -6,11 +6,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.NumberPicker;
 
+import org.joda.time.LocalDate;
+
 import java.util.Arrays;
 import java.util.List;
 
 import aritzh.myDiary.R;
-import aritzh.myDiary.util.Date;
 
 
 /**
@@ -20,7 +21,7 @@ import aritzh.myDiary.util.Date;
  */
 public class DatePickerDialogFragment extends FramelessDialogFragment {
     private static final String DATE_ARG = "DATE_ARG";
-    private Date date;
+    private LocalDate date;
 
     public DatePickerDialogFragment() {
         super(R.layout.fragment_date_picker_dialog);
@@ -33,7 +34,7 @@ public class DatePickerDialogFragment extends FramelessDialogFragment {
      * @param date The date, or null if nothing
      * @return A new instance of fragment DatePickerDialogFragment.
      */
-    public static DatePickerDialogFragment newInstance(Date date) {
+    public static DatePickerDialogFragment newInstance(LocalDate date) {
         DatePickerDialogFragment fragment = new DatePickerDialogFragment();
         Bundle args = new Bundle();
         args.putSerializable(DATE_ARG, date);
@@ -53,7 +54,7 @@ public class DatePickerDialogFragment extends FramelessDialogFragment {
         setStyle(STYLE_NORMAL, android.R.style.Theme_Holo_Dialog_NoActionBar);
 
         if (getArguments() != null && getArguments().containsKey(DATE_ARG)) {
-            this.date = (Date) getArguments().getSerializable(DATE_ARG);
+            this.date = (LocalDate) getArguments().getSerializable(DATE_ARG);
         }
     }
 
@@ -124,10 +125,10 @@ public class DatePickerDialogFragment extends FramelessDialogFragment {
         monthPicker.setOnScrollListener(monthListener);
         dayPicker.setOnScrollListener(dayListener);
 
-        if (this.date == null) this.date = new Date();
+        if (this.date == null) this.date = new LocalDate();
         yearPicker.setValue(this.date.getYear());
-        monthPicker.setValue(this.date.getMonth());
-        dayPicker.setValue(this.date.getDay());
+        monthPicker.setValue(this.date.getMonthOfYear());
+        dayPicker.setValue(this.date.getDayOfMonth());
 
         dayPicker.setMaxValue(getDayAmount(yearPicker.getValue(), monthPicker.getValue()));
 
@@ -139,7 +140,7 @@ public class DatePickerDialogFragment extends FramelessDialogFragment {
         NumberPicker monthPicker = (NumberPicker) getView().findViewById(R.id.monthPicker);
         NumberPicker yearPicker = (NumberPicker) getView().findViewById(R.id.yearPicker);
 
-        this.date = new Date(yearPicker.getValue(), monthPicker.getValue(), dayPicker.getValue());
+        this.date = new LocalDate(yearPicker.getValue(), monthPicker.getValue(), dayPicker.getValue());
         this.activity.dateSaved(this.date);
         this.dismiss();
     }
@@ -149,14 +150,14 @@ public class DatePickerDialogFragment extends FramelessDialogFragment {
         NumberPicker monthPicker = (NumberPicker) getView().findViewById(R.id.monthPicker);
         NumberPicker yearPicker = (NumberPicker) getView().findViewById(R.id.yearPicker);
 
-        this.date = new Date();
+        this.date = new LocalDate();
         yearPicker.setValue(this.date.getYear());
-        monthPicker.setValue(this.date.getMonth());
-        dayPicker.setValue(this.date.getDay());
+        monthPicker.setValue(this.date.getMonthOfYear());
+        dayPicker.setValue(this.date.getDayOfMonth());
     }
 
     public interface DatePickerListener {
-        public void dateSaved(Date date);
+        public void dateSaved(LocalDate date);
     }
 
     private abstract class NumberPickerListener implements NumberPicker.OnScrollListener, NumberPicker.OnValueChangeListener {

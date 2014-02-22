@@ -12,11 +12,13 @@ import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.joda.time.LocalDate;
+import org.joda.time.format.DateTimeFormatter;
+
 import aritzh.myDiary.db.DBHelper;
 import aritzh.myDiary.db.DiaryTable;
 import aritzh.myDiary.diary.Entry;
 import aritzh.myDiary.fragments.DatePickerDialogFragment;
-import aritzh.myDiary.util.Date;
 import aritzh.myDiary.util.MiscUtil;
 import aritzh.myDiary.util.dialogs.DialogBuilder;
 import aritzh.myDiary.util.dialogs.DialogButton;
@@ -26,13 +28,13 @@ public class MainActivity extends Activity implements DatePickerDialogFragment.D
     public static final String LOG_TAG = "MY-DIARY";
 
     private boolean isLoggedIn = false;
-    private Date date;
+    private LocalDate date;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ((TextView) findViewById(R.id.dayTitleText)).setText((this.date = new Date()).toString());
+        ((TextView) findViewById(R.id.dayTitleText)).setText(MiscUtil.dateToString(this.date = new LocalDate()));
     }
 
     @Override
@@ -45,21 +47,21 @@ public class MainActivity extends Activity implements DatePickerDialogFragment.D
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_change_day:
-                DatePickerDialogFragment.newInstance(new Date()).show(getFragmentManager(), "mainDatePickerDialog");
+                DatePickerDialogFragment.newInstance(new LocalDate()).show(getFragmentManager(), "mainDatePickerDialog");
                 return true;
             case R.id.action_save_entry:
-                Entry entry = new Entry(this.date, ((EditText)findViewById(R.id.entryMessage)).getText());
+                Entry entry = new Entry(this.date, ((EditText) findViewById(R.id.entryMessage)).getText());
                 DBHelper helper = new DBHelper(this);
                 SQLiteDatabase db = helper.getWritableDatabase();
-                if(DiaryTable.isEntryPresent(this.date, db)) DiaryTable.updateEntry(entry, db);
+                if (DiaryTable.isEntryPresent(this.date, db)) DiaryTable.updateEntry(entry, db);
                 else DiaryTable.putEntry(entry, db);
                 db.close();
                 return true;
             case R.id.action_debug_db:
                 helper = new DBHelper(this);
                 db = helper.getReadableDatabase();
-                for(Entry e : DiaryTable.getAllEntries(db)) {
-                    Log.i(LOG_TAG, e.getTitle() + "(" + e.getDate().toString() + "): " + e.getMessage());
+                for (Entry e : DiaryTable.getAllEntries(db)) {
+                    Log.i(LOG_TAG, e.getTitle() + "(" + MiscUtil.dateToString(e.getDate()) + "): " + e.getMessage());
                 }
                 db.close();
                 return true;
@@ -71,11 +73,11 @@ public class MainActivity extends Activity implements DatePickerDialogFragment.D
     }
 
     @Override
-    public void dateSaved(Date date) {
-        if(date == null) return;
+    public void dateSaved(LocalDate date) {
+        if (date == null) return;
         this.date = date;
-        ((TextView) findViewById(R.id.dayTitleText)).setText(date.toString());
-        Log.i(MainActivity.LOG_TAG, "Date: " + date.getDay() + "/" + date.getMonth() + "/" + date.getYear());
+        ((TextView) findViewById(R.id.dayTitleText)).setText(MiscUtil.dateToString(date));
+        Log.i(MainActivity.LOG_TAG, "Date: " + date.getDayOfMonth() + "/" + date.getMonthOfYear() + "/" + date.getYear());
     }
 
     @Override
