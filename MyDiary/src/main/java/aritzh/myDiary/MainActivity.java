@@ -58,13 +58,16 @@ public class MainActivity extends Activity implements DatePickerDialogFragment.D
                 this.diary.entryChanged(entry);
                 return true;
             case R.id.action_debug_db:
-                this.storeDiaryToDB();
+                this.debugDB();
                 return true;
             case R.id.action_clear_db:
                 DBHelper helper = new DBHelper(this);
                 SQLiteDatabase db = helper.getWritableDatabase();
                 DiaryTable.initDB(db);
                 MetaTable.initDB(db);
+                return true;
+            case R.id.action_save_db:
+                this.storeDiaryToDB();
                 return true;
         }
         return super.onOptionsItemSelected(item);

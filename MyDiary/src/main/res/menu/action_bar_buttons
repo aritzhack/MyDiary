@@ -13,15 +13,21 @@
         android:icon="@android:drawable/ic_menu_save"
         android:showAsAction="always" />
 
+    <item android:id="@+id/action_save_db"
+        android:title="Save DB"
+        android:orderInCategory="3"
+        android:icon="@android:drawable/ic_menu_edit"
+        android:showAsAction="ifRoom" />
+
     <item android:id="@+id/action_debug_db"
         android:title="Debug"
-        android:orderInCategory="3"
+        android:orderInCategory="4"
         android:icon="@android:drawable/stat_notify_error"
         android:showAsAction="ifRoom" />
 
     <item android:id="@+id/action_clear_db"
         android:title="Clear DB"
-        android:orderInCategory="4"
+        android:orderInCategory="5"
         android:icon="@android:drawable/ic_notification_clear_all"
         android:showAsAction="ifRoom" />
 </menu>
