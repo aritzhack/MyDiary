@@ -13,10 +13,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import org.joda.time.LocalDate;
-import org.joda.time.format.DateTimeFormatter;
 
 import aritzh.myDiary.db.DBHelper;
 import aritzh.myDiary.db.DiaryTable;
+import aritzh.myDiary.db.MetaTable;
+import aritzh.myDiary.diary.Diary;
 import aritzh.myDiary.diary.Entry;
 import aritzh.myDiary.fragments.DatePickerDialogFragment;
 import aritzh.myDiary.util.MiscUtil;
@@ -29,10 +30,13 @@ public class MainActivity extends Activity implements DatePickerDialogFragment.D
 
     private boolean isLoggedIn = false;
     private LocalDate date;
+    private boolean doNotAskAgain;
+    private Diary diary;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        doNotAskAgain = false;
         setContentView(R.layout.activity_main);
         ((TextView) findViewById(R.id.dayTitleText)).setText(MiscUtil.dateToString(this.date = new LocalDate()));
     }
@@ -51,33 +55,44 @@ public class MainActivity extends Activity implements DatePickerDialogFragment.D
                 return true;
             case R.id.action_save_entry:
                 Entry entry = new Entry(this.date, ((EditText) findViewById(R.id.entryMessage)).getText());
-                DBHelper helper = new DBHelper(this);
-                SQLiteDatabase db = helper.getWritableDatabase();
-                if (DiaryTable.isEntryPresent(this.date, db)) DiaryTable.updateEntry(entry, db);
-                else DiaryTable.putEntry(entry, db);
-                db.close();
+                this.diary.entryChanged(entry);
                 return true;
             case R.id.action_debug_db:
-                helper = new DBHelper(this);
-                db = helper.getReadableDatabase();
-                for (Entry e : DiaryTable.getAllEntries(db)) {
-                    Log.i(LOG_TAG, e.getTitle() + "(" + MiscUtil.dateToString(e.getDate()) + "): " + e.getMessage());
-                }
-                db.close();
+                this.storeDiaryToDB();
                 return true;
             case R.id.action_clear_db:
-                helper = new DBHelper(this);
-                helper.onCreate(helper.getWritableDatabase());
+                DBHelper helper = new DBHelper(this);
+                SQLiteDatabase db = helper.getWritableDatabase();
+                DiaryTable.initDB(db);
+                MetaTable.initDB(db);
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    public void debugDB() {
+        DBHelper helper = new DBHelper(this);
+        SQLiteDatabase db = helper.getReadableDatabase();
+        for (Entry e : DiaryTable.getAllEntries(db)) {
+            Log.i(LOG_TAG, e.toString());
+        }
+        db.close();
+    }
+
+    public void storeDiaryToDB() {
+        DBHelper helper = new DBHelper(this);
+        SQLiteDatabase db = helper.getWritableDatabase();
+        this.diary.storeToDB(db);
+        db.close();
+    }
+
     @Override
-    public void dateSaved(LocalDate date) {
+    public void dateSet(LocalDate date) {
         if (date == null) return;
         this.date = date;
         ((TextView) findViewById(R.id.dayTitleText)).setText(MiscUtil.dateToString(date));
-        Log.i(MainActivity.LOG_TAG, "Date: " + date.getDayOfMonth() + "/" + date.getMonthOfYear() + "/" + date.getYear());
+        Entry entry = this.diary.getDecodedEntry(date);
+        ((EditText) findViewById(R.id.entryMessage)).setText(entry.getMessage() != null ? entry.getMessage() : "");
     }
 
     @Override
@@ -89,6 +104,8 @@ public class MainActivity extends Activity implements DatePickerDialogFragment.D
     private void promptForPassword() {
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+        if (doNotAskAgain) return;
 
         new DialogBuilder(this, "")
                 .setTitle("Enter password")
@@ -133,8 +150,16 @@ public class MainActivity extends Activity implements DatePickerDialogFragment.D
                 .setCancelButton(DialogButton.CANCEL)
                 .setView(input)
                 .show();
+        doNotAskAgain = true;
     }
 
     public void loggedIn(String pass) {
+        doNotAskAgain = false;
+        DBHelper helper = new DBHelper(this);
+        this.diary = Diary.fromDB(helper.getReadableDatabase());
+        this.diary.setUserPass(pass);
+        for (Entry e : this.diary.getEntries()) {
+            Log.d(LOG_TAG, e.toString());
+        }
     }
 }

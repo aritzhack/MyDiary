@@ -141,7 +141,7 @@ public class DatePickerDialogFragment extends FramelessDialogFragment {
         NumberPicker yearPicker = (NumberPicker) getView().findViewById(R.id.yearPicker);
 
         this.date = new LocalDate(yearPicker.getValue(), monthPicker.getValue(), dayPicker.getValue());
-        this.activity.dateSaved(this.date);
+        this.activity.dateSet(this.date);
         this.dismiss();
     }
 
@@ -157,7 +157,7 @@ public class DatePickerDialogFragment extends FramelessDialogFragment {
     }
 
     public interface DatePickerListener {
-        public void dateSaved(LocalDate date);
+        public void dateSet(LocalDate date);
     }
 
     private abstract class NumberPickerListener implements NumberPicker.OnScrollListener, NumberPicker.OnValueChangeListener {
