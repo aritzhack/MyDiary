@@ -4,6 +4,8 @@ import com.google.common.base.Preconditions;
 
 import org.joda.time.LocalDate;
 
+import aritzh.myDiary.util.MiscUtil;
+
 /**
  * Created by aritzh on 15/02/14.
  */
@@ -56,5 +58,10 @@ public class Entry {
         result = 31 * result + (message != null ? message.hashCode() : 0);
         result = 31 * result + (title != null ? title.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return this.title + " (" + MiscUtil.dateToString(this.date) + "): " + this.message;
     }
 }
