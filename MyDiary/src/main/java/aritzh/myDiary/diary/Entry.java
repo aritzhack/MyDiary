@@ -39,4 +39,22 @@ public class Entry {
     public String getTitle() {
         return title;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Entry entry = (Entry) o;
+
+        return date.equals(entry.date) && !(message != null ? !message.equals(entry.message) : entry.message != null) && !(title != null ? !title.equals(entry.title) : entry.title != null);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = date.hashCode();
+        result = 31 * result + (message != null ? message.hashCode() : 0);
+        result = 31 * result + (title != null ? title.hashCode() : 0);
+        return result;
+    }
 }

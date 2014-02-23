@@ -10,7 +10,6 @@ import com.google.common.collect.Lists;
 
 import org.joda.time.LocalDate;
 
-import java.net.MulticastSocket;
 import java.util.List;
 
 import aritzh.myDiary.MainActivity;
