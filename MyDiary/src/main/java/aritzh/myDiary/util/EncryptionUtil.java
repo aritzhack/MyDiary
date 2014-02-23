@@ -11,6 +11,7 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.PBEParameterSpec;
 
 /**
  * Created by aritzh on 23/02/14.
@@ -19,11 +20,12 @@ public class EncryptionUtil {
 
     public static String encrypt(String plainText, String key) {
         try {
+            PBEParameterSpec pbeParamSpec = new PBEParameterSpec(new byte[]{0}, 1);
             Cipher cipher = Cipher.getInstance("AES");
             PBEKeySpec spec = new PBEKeySpec(key.toCharArray());
             SecretKeyFactory kf = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
             SecretKey passwordKey = kf.generateSecret(spec);
-            cipher.init(Cipher.ENCRYPT_MODE, passwordKey);
+            cipher.init(Cipher.ENCRYPT_MODE, passwordKey, pbeParamSpec);
 
             byte[] utf8 = plainText.getBytes("UTF-8");
             byte[] enc = cipher.doFinal(utf8);
@@ -37,11 +39,12 @@ public class EncryptionUtil {
 
     public static String decrypt(String plainText, String key) {
         try {
+            PBEParameterSpec pbeParamSpec = new PBEParameterSpec(new byte[]{0}, 1);
             Cipher cipher = Cipher.getInstance("AES");
             PBEKeySpec spec = new PBEKeySpec(key.toCharArray());
             SecretKeyFactory kf = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
             SecretKey passwordKey = kf.generateSecret(spec);
-            cipher.init(Cipher.DECRYPT_MODE, passwordKey);
+            cipher.init(Cipher.DECRYPT_MODE, passwordKey, pbeParamSpec);
 
             byte[] dec = Base64.decode(plainText, Base64.DEFAULT);
             byte[] utf8 = cipher.doFinal(dec);

@@ -16,5 +16,7 @@
     <string name="no">No</string>
     <string name="ok">OK</string>
     <string name="accept">Accept</string>
+    <string name="enterPassword">Enter password</string>
+    <string name="enterDiaryPasssword">Enter diary password</string>
 
 </resources>

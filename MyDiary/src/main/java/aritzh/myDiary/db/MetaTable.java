@@ -37,16 +37,16 @@ public class MetaTable implements BaseColumns, SQLConstants {
         Cursor c = db.query(
                 TABLE_NAME,             // The table to query
                 projection,             // The columns to return
-                COLUMN_FIELD,           // The columns for the WHERE clause
+                COLUMN_FIELD + " = ?",           // The columns for the WHERE clause
                 new String[]{property}, // The values for the WHERE clause
                 null,                   // don't group the rows
                 null,                   // don't filter by row groups
                 sortOrder               // order by date, just in case
         );
 
-        if (c.getColumnCount() > 1)
+        if (c.getCount() > 1)
             throw new DBEntryDuplicatedException("There have been found more than one property with the same key!"); // TODO Tell the user there is something wrong with the DB
-        if (c.getColumnCount() == 0) return null;
+        if (c.getCount() == 0) return null;
 
         c.moveToFirst();
         return c.getString(c.getColumnIndexOrThrow(COLUMN_VALUE));
@@ -54,7 +54,7 @@ public class MetaTable implements BaseColumns, SQLConstants {
 
     public static void setProperty(String property, String value, SQLiteDatabase db) {
         ContentValues values = getValuesForPropery(property, value);
-        long newRowID = db.insert(DiaryTable.TABLE_NAME, "null", values);
+        long newRowID = db.insert(TABLE_NAME, null, values);
     }
 
     private static ContentValues getValuesForPropery(String property, String value) {
@@ -72,11 +72,11 @@ public class MetaTable implements BaseColumns, SQLConstants {
         return affected != 0;
     }
 
-    public void clear(SQLiteDatabase db) {
+    public static void clear(SQLiteDatabase db) {
         initDB(db);
     }
 
-    public boolean isPropertyPresent(String property, SQLiteDatabase db) {
+    public static boolean isPropertyPresent(String property, SQLiteDatabase db) {
         return getProperty(property, db) != null;
     }
 }

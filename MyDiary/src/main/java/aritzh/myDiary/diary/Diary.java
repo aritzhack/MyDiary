@@ -1,6 +1,7 @@
 package aritzh.myDiary.diary;
 
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
@@ -12,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import aritzh.myDiary.MainActivity;
 import aritzh.myDiary.db.DiaryTable;
 import aritzh.myDiary.db.MetaTable;
 import aritzh.myDiary.util.EncryptionUtil;
@@ -28,7 +30,7 @@ public class Diary {
 
     private Diary(Map<LocalDate, Entry> entries, String password) {
         Preconditions.checkArgument(password != null, "Password cannot be null!");
-        Preconditions.checkArgument("".equals(password), "Password cannot be empty!");
+        Log.d(MainActivity.LOG_TAG, "Password: " + password);
         this.entries.clear();
         if (entries != null) this.entries.putAll(entries);
         this.password = password;
@@ -78,6 +80,7 @@ public class Diary {
             entries.put(e.getDate(), e);
         }
         String pass = MetaTable.getProperty("password", db);
+        if (pass == null) throw new IllegalStateException("DB was not initialized with a password!");
         return new Diary(entries, pass);
     }
 

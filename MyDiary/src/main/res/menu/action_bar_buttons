@@ -5,8 +5,9 @@
     <item android:id="@+id/action_change_day"
         android:title="@string/action_change_day"
         android:orderInCategory="1"
-        android:icon="@android:drawable/ic_menu_my_calendar"
+        android:icon="@android:drawable/ic_menu_month"
         android:showAsAction="always" />
+
     <item android:id="@+id/action_save_entry"
         android:title="Save entry"
         android:orderInCategory="2"

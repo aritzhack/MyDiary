@@ -20,6 +20,7 @@ import aritzh.myDiary.db.MetaTable;
 import aritzh.myDiary.diary.Diary;
 import aritzh.myDiary.diary.Entry;
 import aritzh.myDiary.fragments.DatePickerDialogFragment;
+import aritzh.myDiary.util.EncryptionUtil;
 import aritzh.myDiary.util.MiscUtil;
 import aritzh.myDiary.util.dialogs.DialogBuilder;
 import aritzh.myDiary.util.dialogs.DialogButton;
@@ -101,7 +102,19 @@ public class MainActivity extends Activity implements DatePickerDialogFragment.D
     @Override
     protected void onResume() {
         super.onResume();
-        if (!isLoggedIn) promptForPassword();
+        DBHelper helper = new DBHelper(this);
+        SQLiteDatabase db = helper.getReadableDatabase();
+        MetaTable.initDB(db);
+        DiaryTable.initDB(db);
+        boolean isFirstTime = !MetaTable.isPropertyPresent("password", db);
+        if (isFirstTime) {
+            MetaTable.initDB(db);
+            DiaryTable.initDB(db);
+        }
+        db.close();
+
+        if (isFirstTime) this.promptForFirstPassword();
+        else if (!isLoggedIn) promptForPassword();
     }
 
     private void promptForPassword() {
@@ -111,7 +124,7 @@ public class MainActivity extends Activity implements DatePickerDialogFragment.D
         if (doNotAskAgain) return;
 
         new DialogBuilder(this, "")
-                .setTitle("Enter password")
+                .setTitle(getString(R.string.enterPassword))
                 .addButton(DialogButton.OK, new DialogBuilder.Listener() {
                     @Override
                     public void onAction(DialogInterface dialog) {
@@ -164,5 +177,69 @@ public class MainActivity extends Activity implements DatePickerDialogFragment.D
         for (Entry e : this.diary.getEntries()) {
             Log.d(LOG_TAG, e.toString());
         }
+    }
+
+    public void promptForFirstPassword() {
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+        if (doNotAskAgain) return;
+
+        new DialogBuilder(this, "")
+                .setTitle(getString(R.string.enterDiaryPasssword))
+                .addButton(DialogButton.OK, new DialogBuilder.Listener() {
+                    @Override
+                    public void onAction(DialogInterface dialog) {
+                        Editable e = input.getText();
+                        if (e != null && e.length() != 0) {
+                            MainActivity.this.firstLogin(e.toString());
+                            dialog.dismiss();
+                        } else {
+                            MiscUtil.showOkDialog(MainActivity.this, R.string.passMustNotBeEmptyMessage, new DialogBuilder.Listener() {
+                                @Override
+                                public void onAction(DialogInterface dialogInterface) {
+                                    MainActivity.this.promptForFirstPassword();
+                                }
+                            });
+                        }
+                    }
+                })
+                .addButton(DialogButton.CANCEL, new DialogBuilder.Listener() {
+                    @Override
+                    public void onAction(DialogInterface dialog) {
+                        new DialogBuilder(MainActivity.this, R.string.mustEnterPasswordMessage)
+                                .addButton(DialogButton.YES, new DialogBuilder.Listener() {
+                                    @Override
+                                    public void onAction(DialogInterface dialog) {
+                                        MainActivity.this.finish();
+                                    }
+                                })
+                                .addButton(DialogButton.NO, new DialogBuilder.Listener() {
+                                    @Override
+                                    public void onAction(DialogInterface dialog) {
+                                        dialog.dismiss();
+                                        MainActivity.this.promptForFirstPassword();
+                                    }
+                                })
+                                .setCancelButton(DialogButton.YES)
+                                .show();
+                    }
+                })
+                .setCancelButton(DialogButton.CANCEL)
+                .setView(input)
+                .show();
+        doNotAskAgain = true;
+    }
+
+    private void firstLogin(String password) {
+        Log.d(LOG_TAG, "Password: " + password);
+        String encryptedPassword = EncryptionUtil.encodePassword(password);
+
+        DBHelper helper = new DBHelper(this);
+        SQLiteDatabase db = helper.getWritableDatabase();
+        MetaTable.setProperty("password", encryptedPassword, db);
+        this.diary = Diary.newDiary(encryptedPassword);
+        db.close();
+
     }
 }
